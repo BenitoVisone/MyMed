@@ -19,20 +19,20 @@
         android:id="@+id/indirizzo_studio"
         android:layout_width="247dp"
         android:layout_height="46dp"
-        android:layout_marginStart="32dp"
+        android:layout_marginStart="24dp"
         android:hint="Indirizzo studio"
         android:inputType="textEmailAddress"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.165" />
+        app:layout_constraintVertical_bias="0.121" />
 
     <TextView
         android:id="@+id/textView6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="24dp"
         android:text="Inserisci indirizzo studio"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,20 +40,21 @@
 
     <Button
         android:id="@+id/addSchedule"
-        android:layout_width="60dp"
-        android:layout_height="42dp"
-        android:layout_marginEnd="28dp"
+        android:layout_width="52dp"
+        android:layout_height="55dp"
         android:backgroundTint="#009688"
         android:text="+"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.976"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.172" />
+        app:layout_constraintVertical_bias="0.121" />
 
     <LinearLayout
         android:id="@+id/mainLayout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -61,7 +62,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.298">
+        app:layout_constraintVertical_bias="0.248">
 
     </LinearLayout>
 

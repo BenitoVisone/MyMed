@@ -108,11 +108,15 @@ public class ScheduleActivity extends AppCompatActivity  {
                 FirebaseDatabase database = FirebaseDatabase.getInstance("https://mymed-b094e-default-rtdb.europe-west1.firebasedatabase.app/");
                 DatabaseReference myRef = database.getReference();
                 for(int i = 0;i<indirizzi.size();i++) {
-                    myRef.child("users").child("doctors").child(user_id).child("offices").child(indirizzi.get(i)).child("timetables").child("timetable_"+i).setValue(new Timetable(Integer.valueOf(ore_inizio.get(i).getText().toString()),Integer.valueOf(ore_fine.get(i).getText().toString()),spinners.get(i).getSelectedItem().toString()));
+                    int start_hour, start_min, end_hour, end_min;
+                    String start_input, end_input;
+                    String[] parts_start = ore_inizio.get(i).getText().toString().split(":");
+                    String[] parts_end = ore_fine.get(i).getText().toString().split(":");
 
+                    myRef.child("users").child("doctors").child(user_id).child("offices").child(edit_indirizzo.getText().toString()).child("timetables").push().setValue(new Timetable(Integer.valueOf(parts_start[0].toString()),Integer.valueOf(parts_start[1].toString()),Integer.valueOf(parts_end[0].toString()),Integer.valueOf(parts_end[1].toString()),spinners.get(i).getSelectedItem().toString()));
                 }
 
-                showToast("Registrazione avvenuta con successo!");
+                showToast("Dati inseriti correttamente.");
             }
         });
 
