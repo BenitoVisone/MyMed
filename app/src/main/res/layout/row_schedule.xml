@@ -10,17 +10,18 @@
             android:layout_height="wrap_content"
             android:entries="@array/week"
             />
+
         <EditText
             android:id="@+id/ora_inizio"
-            android:inputType="number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
             android:layout_marginLeft="4dp"
+            android:layout_marginTop="4dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="sans-serif"
-            android:hint="Dalle ore:"/>
+            android:hint="Dalle ore:"
+            android:inputType="time" />
 
         <EditText
             android:id="@+id/ora_fine"

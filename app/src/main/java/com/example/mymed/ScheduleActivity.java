@@ -63,26 +63,6 @@ public class ScheduleActivity extends AppCompatActivity  {
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://mymed-b094e-default-rtdb.europe-west1.firebasedatabase.app/");
         DatabaseReference myRef = database.getReference();
 
-        /*myRef.child("users").child("doctors").child(user_id).child("offices").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                final List<String> offices = new ArrayList<String>();
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    String address = snapshot.child("indirizzo").getValue().toString();
-                    offices.add(address);
-                }
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(ScheduleActivity.this, android.R.layout.simple_spinner_item, offices);
-                office_selected = offices;
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinner.setAdapter(adapter);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });*/
         button_dialog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,9 +89,22 @@ public class ScheduleActivity extends AppCompatActivity  {
                 DatabaseReference myRef = database.getReference();
                 for(int i = 0;i<indirizzi.size();i++) {
                     int start_hour, start_min, end_hour, end_min;
-                    String start_input, end_input;
-                    String[] parts_start = ore_inizio.get(i).getText().toString().split(":");
-                    String[] parts_end = ore_fine.get(i).getText().toString().split(":");
+                    String[] parts_start = new String[2];
+                    String[] parts_end = new String[2];
+                    if(ore_inizio.get(i).getText().toString().contains(":")){
+                        parts_start = ore_inizio.get(i).getText().toString().split(":");
+                    }
+                    else{
+                        parts_start[0] = ore_inizio.get(i).getText().toString();
+                        parts_start[1] = "0";
+                    }
+                    if(ore_fine.get(i).getText().toString().contains(":")){
+                        parts_end = ore_fine.get(i).getText().toString().split(":");
+                    }
+                    else{
+                        parts_end[0] = ore_fine.get(i).getText().toString();
+                        parts_start[1] = "0";
+                    }
 
                     myRef.child("users").child("doctors").child(user_id).child("offices").child(edit_indirizzo.getText().toString()).child("timetables").push().setValue(new Timetable(Integer.valueOf(parts_start[0].toString()),Integer.valueOf(parts_start[1].toString()),Integer.valueOf(parts_end[0].toString()),Integer.valueOf(parts_end[1].toString()),spinners.get(i).getSelectedItem().toString()));
                 }
@@ -119,19 +112,6 @@ public class ScheduleActivity extends AppCompatActivity  {
                 showToast("Dati inseriti correttamente.");
             }
         });
-
-
-        /*spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getApplicationContext(), "Ufficio selezionato: " + office_selected.get(position) , Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });*/
 
     }
 

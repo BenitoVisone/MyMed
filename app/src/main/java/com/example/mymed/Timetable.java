@@ -24,7 +24,7 @@ public class Timetable {
 
     private String giorno;
 
-    public int getStart() {
+    public int getStart_hour() {
         return start_hour;
     }
 
