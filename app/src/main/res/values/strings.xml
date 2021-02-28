@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MyMed</string>
+    <string-array name="week">
+        <item>Lunedì</item>
+        <item>Martedì</item>
+        <item>Mercoledì</item>
+        <item>Giovedì</item>
+        <item>Venerdì</item>
+        <item>Sabato</item>
+        <item>Domenica</item>
+    </string-array>
+
+</resources>
