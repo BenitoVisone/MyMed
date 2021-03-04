@@ -41,7 +41,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
+public class
+MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private FirebaseAuth firebaseAuth;

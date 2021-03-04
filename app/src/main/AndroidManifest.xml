@@ -10,6 +10,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.MyMed">
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -22,6 +23,7 @@
         <activity android:name=".UserActivity" />
         <activity android:name=".DoctorActivity" />
         <activity android:name=".ScheduleActivity" />
+        <activity android:name=".AddDoctorActivity"></activity>
     </application>
 
 </manifest>
