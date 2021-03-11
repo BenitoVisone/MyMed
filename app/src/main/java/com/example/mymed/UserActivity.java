@@ -1,12 +1,21 @@
 package com.example.mymed;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -18,10 +27,29 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 public class UserActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private Button logoutButton;
+    private EditText selectedData;
+    private DatePickerDialog picker;
+    private List<String> offices_selected = new ArrayList<String>();
+    private List<String> all_timetables = new ArrayList<>();
+    private Spinner spinner;
+    private Spinner spinnerTwo;
+    private String id_doctor;
 
     private FirebaseAuth firebaseAuth;
 
@@ -70,9 +98,96 @@ public class UserActivity extends AppCompatActivity {
             }
         });
 
+        selectedData=(EditText) findViewById(R.id.editTextDataPrenotazione);
+        spinner = (Spinner)findViewById(R.id.planet_spinner);
+        spinnerTwo = (Spinner)findViewById(R.id.planet_spinner_two);
+        selectedData.setInputType(InputType.TYPE_NULL);
+        selectedData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Calendar cldr = Calendar.getInstance();
+                int day = cldr.get(Calendar.DAY_OF_MONTH);
+                int month = cldr.get(Calendar.MONTH);
+                int year = cldr.get(Calendar.YEAR);
+                // date picker dialog
+                picker = new DatePickerDialog(UserActivity.this,
+                        new DatePickerDialog.OnDateSetListener() {
+                            @Override
+                            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                                selectedData.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
+                            }
+                        }, year, month, day);
+                picker.show();
+            }
+        });
 
+        DatabaseReference myRef1 = database.getReference();
+        myRef1.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
+                id_doctor = dataSnapshot.child("patients").child(user_id).child("doctor").getValue(String.class);
+                final List<String> offices = new ArrayList<String>();
+                for(DataSnapshot snapshot : dataSnapshot.child("doctors").child(id_doctor).child("offices").getChildren()){
+                    String address = snapshot.getKey();
+                    offices.add(address);
+                }
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(UserActivity.this, android.R.layout.simple_spinner_item, offices);
+                offices_selected = offices;
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinner.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                //Selezionato un elemento dallo spinner, effettuo un interrogazione per recuperare tutti i timetables disponibili, da qui devo poi escludere
+                //quelli già prenotati, interrogando il ramo "bookings" attraverso id_doctor e data, costruito in modo da ottimizzare ricerca e consentire notifiche al dottore
+                Date date1= null;
+                try {
+                    date1 = new SimpleDateFormat("dd/MM/yyyy").parse(selectedData.getText().toString());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                String giornoSettimana = getDayStringOld(date1,Locale.ITALIAN);
+                Log.e("giornoSettimana", "Giorno selezionato: "+ giornoSettimana);
+
+                    myRef1.child("doctors").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        final List<String> timetables = new ArrayList<String>();
+                        for(DataSnapshot snapshot : dataSnapshot.child("doctors").child(id_doctor).child("offices").child("timetables").child(giornoSettimana).getChildren()){
+                            String address = snapshot.getKey();
+                            timetables.add(address);
+                        }
+                        ArrayAdapter<String> adapterTwo = new ArrayAdapter<String>(UserActivity.this, android.R.layout.simple_spinner_item, timetables);
+                        all_timetables = timetables;
+                        //Per ogni timetables, prima di darli allo spinner, chiamo una funzione per interrogare ilramo bookings e capire se il turno è libero omeno, se non lo è elimino dall'array quel valore
+                        adapterTwo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerTwo.setAdapter(adapterTwo);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                    }
+                });
+
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
     }
 
+    public static String getDayStringOld(Date date, Locale locale) {
+        DateFormat formatter = new SimpleDateFormat("EEEE", locale);
+        return formatter.format(date);
+    }
 }

@@ -16,7 +16,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class ScheduleActivity extends AppCompatActivity  {
@@ -27,6 +32,7 @@ public class ScheduleActivity extends AppCompatActivity  {
     private Button button_save;
     private List<String> office_selected;
     private EditText edit_indirizzo;
+    private EditText edit_slot;
     private LinearLayout layoutList;
     private ArrayList<Schedule> schedules;
 
@@ -54,10 +60,10 @@ public class ScheduleActivity extends AppCompatActivity  {
             startActivity(new Intent(ScheduleActivity.this, MainActivity.class));
             finish();
         }
-        //spinner = (Spinner)findViewById(R.id.planets_spinner);
         button_dialog = (Button)findViewById(R.id.addSchedule);
         button_save = (Button)findViewById(R.id.saveButton);
         edit_indirizzo = (EditText)findViewById(R.id.indirizzo_studio);
+        edit_slot = (EditText)findViewById(R.id.edit_slot);
 
         String user_id = firebaseAuth.getCurrentUser().getUid();
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://mymed-b094e-default-rtdb.europe-west1.firebasedatabase.app/");
@@ -79,6 +85,7 @@ public class ScheduleActivity extends AppCompatActivity  {
                 spinners.add(spinner_day);
                 indirizzi.add(edit_indirizzo.getText().toString());
 
+
             }
         });
 
@@ -88,25 +95,9 @@ public class ScheduleActivity extends AppCompatActivity  {
                 FirebaseDatabase database = FirebaseDatabase.getInstance("https://mymed-b094e-default-rtdb.europe-west1.firebasedatabase.app/");
                 DatabaseReference myRef = database.getReference();
                 for(int i = 0;i<indirizzi.size();i++) {
-                    int start_hour, start_min, end_hour, end_min;
-                    String[] parts_start = new String[2];
-                    String[] parts_end = new String[2];
-                    if(ore_inizio.get(i).getText().toString().contains(":")){
-                        parts_start = ore_inizio.get(i).getText().toString().split(":");
-                    }
-                    else{
-                        parts_start[0] = ore_inizio.get(i).getText().toString();
-                        parts_start[1] = "0";
-                    }
-                    if(ore_fine.get(i).getText().toString().contains(":")){
-                        parts_end = ore_fine.get(i).getText().toString().split(":");
-                    }
-                    else{
-                        parts_end[0] = ore_fine.get(i).getText().toString();
-                        parts_start[1] = "0";
-                    }
 
-                    myRef.child("users").child("doctors").child(user_id).child("offices").child(edit_indirizzo.getText().toString()).child("timetables").push().setValue(new Timetable(Integer.valueOf(parts_start[0].toString()),Integer.valueOf(parts_start[1].toString()),Integer.valueOf(parts_end[0].toString()),Integer.valueOf(parts_end[1].toString()),spinners.get(i).getSelectedItem().toString()));
+                    getSlottedTimetable(ore_inizio.get(i).getText().toString(),ore_fine.get(i).getText().toString(),Integer.valueOf(edit_slot.getText().toString()),myRef,user_id,i);
+
                 }
 
                 showToast("Dati inseriti correttamente.");
@@ -117,6 +108,22 @@ public class ScheduleActivity extends AppCompatActivity  {
 
     public void showToast(String toastText) {
         Toast.makeText(this, toastText, Toast.LENGTH_SHORT).show();
+    }
+
+    private void getSlottedTimetable(String ore_inizio, String ore_fine,int slot_time,DatabaseReference myRef, String user_id,int i){
+        DateTimeFormatter df = DateTimeFormatter.ofPattern("HH:mm");
+
+        LocalTime lt_start = LocalTime.parse(ore_inizio);
+        LocalTime lt_stop = LocalTime.parse(ore_fine);
+
+        while(LocalTime.parse(df.format(lt_start.plusMinutes(slot_time))).isBefore(lt_stop)) {
+
+            LocalTime lt_slot = LocalTime.parse(df.format(lt_start.plusMinutes(slot_time)));
+            myRef.child("users").child("doctors").child(user_id).child("offices").child(edit_indirizzo.getText().toString()).child("timetables").child(spinners.get(i).getSelectedItem().toString()).push().setValue(new Timetable(Integer.parseInt(lt_start.toString().split(":")[0]),Integer.parseInt(lt_start.toString().split(":")[1]),Integer.parseInt(lt_slot.toString().split(":")[0]),Integer.parseInt(lt_slot.toString().split(":")[1]),spinners.get(i).getSelectedItem().toString()));
+
+            lt_start = lt_slot;
+        }
+
     }
 
 }

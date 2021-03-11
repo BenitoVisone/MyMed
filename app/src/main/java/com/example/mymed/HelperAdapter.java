@@ -1,8 +1,10 @@
 package com.example.mymed;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,7 +63,8 @@ public class HelperAdapter extends RecyclerView.Adapter {
                         DatabaseReference myRef = database.getReference();
                         myRef.child("users").child("patients").child(user_id).child("doctor").setValue(doctor.getKey());
                         Log.d("HelperAdapter", "ID Dottore: "+doctor.getKey());
-                        Toast.makeText(view.getContext(), "Hai aggiunto correttamente il tuo medico", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(view.getContext(), "Hai aggiunto correttamente il tuo medico", Toast.LENGTH_LONG).show();
+                        view.getContext().startActivity(new Intent(view.getContext(),UserActivity.class));
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {

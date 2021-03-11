@@ -16,7 +16,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="30dp"
         android:layout_marginTop="30dp"
-        android:text="Cerca il tuo medico"
+        android:text="Inserisci il tuo medico per iniziare"
         android:textColor="#555555"
         android:textSize="24sp" />
 

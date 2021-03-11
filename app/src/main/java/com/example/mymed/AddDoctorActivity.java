@@ -89,6 +89,7 @@ public class AddDoctorActivity extends AppCompatActivity {
                         }
                         helperAdapter = new HelperAdapter(doctorsList);
                         recyclerView.setAdapter(helperAdapter);
+
                     }
 
                     @Override
