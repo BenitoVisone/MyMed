@@ -1,4 +1,5 @@
 package com.example.mymed;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -47,9 +48,11 @@ public class UserActivity extends AppCompatActivity {
     private DatePickerDialog picker;
     private List<String> offices_selected = new ArrayList<String>();
     private List<String> all_timetables = new ArrayList<>();
+    private List<String> all_ids = new ArrayList<>();
     private Spinner spinner;
     private Spinner spinnerTwo;
     private String id_doctor;
+    private boolean checkBooking = false;
 
     private FirebaseAuth firebaseAuth;
 
@@ -114,7 +117,10 @@ public class UserActivity extends AppCompatActivity {
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                                selectedData.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
+                                SimpleDateFormat simpledateformat = new SimpleDateFormat("dd-MM-yyyy");
+                                Calendar newDate = Calendar.getInstance();
+                                newDate.set(year, monthOfYear, dayOfMonth);
+                                selectedData.setText(simpledateformat.format(newDate.getTime()));
                             }
                         }, year, month, day);
                 picker.show();
@@ -143,32 +149,72 @@ public class UserActivity extends AppCompatActivity {
             }
         });
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @SuppressLint("SimpleDateFormat")
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //Selezionato un elemento dallo spinner, effettuo un interrogazione per recuperare tutti i timetables disponibili, da qui devo poi escludere
                 //quelli già prenotati, interrogando il ramo "bookings" attraverso id_doctor e data, costruito in modo da ottimizzare ricerca e consentire notifiche al dottore
-                Date date1= null;
+                if(!selectedData.getText().toString().isEmpty()){
+                Date date1 = null;
                 try {
-                    date1 = new SimpleDateFormat("dd/MM/yyyy").parse(selectedData.getText().toString());
+                    date1 = new SimpleDateFormat("dd-MM-yyyy").parse(selectedData.getText().toString());
                 } catch (ParseException e) {
-                    e.printStackTrace();
+                    try {
+                        date1 = new SimpleDateFormat("d-MM-yyyy").parse(selectedData.getText().toString());
+                    } catch (ParseException parseException) {
+                        try {
+                            date1 = new SimpleDateFormat("dd-M-yyyy").parse(selectedData.getText().toString());
+                        } catch (ParseException exception) {
+                            try {
+                                date1 = new SimpleDateFormat("d-M-yyyy").parse(selectedData.getText().toString());
+                            } catch (ParseException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
                 }
 
-                String giornoSettimana = getDayStringOld(date1,Locale.ITALIAN);
-                Log.e("giornoSettimana", "Giorno selezionato: "+ giornoSettimana);
+                String giornoSettimana = getDayStringOld(date1, Locale.ITALIAN);
+                Log.e("giornoSettimana", "Giorno selezionato: " + giornoSettimana);
 
-                    myRef1.child("doctors").addListenerForSingleValueEvent(new ValueEventListener() {
+                DatabaseReference myRef2 = database.getReference();
+                myRef2.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
                         final List<String> timetables = new ArrayList<String>();
-                        for(DataSnapshot snapshot : dataSnapshot.child("doctors").child(id_doctor).child("offices").child("timetables").child(giornoSettimana).getChildren()){
-                            String address = snapshot.getKey();
-                            timetables.add(address);
+                        List<String> tmt = new ArrayList<>();
+                        final List<String> sIds = new ArrayList<>();//add ids in this list
+                        final List<String> states = new ArrayList<>();
+                        for (DataSnapshot snapshot : dataSnapshot.child("doctors").child(id_doctor).child("offices").child(spinner.getSelectedItem().toString()).child("timetables").child(giornoSettimana).getChildren()) {
+                            String start_hour = snapshot.child("start_hour").getValue().toString();
+                            String end_hour = snapshot.child("endHour").getValue().toString();
+                            String start_min = snapshot.child("start_min").getValue().toString();
+                            String end_min = snapshot.child("end_min").getValue().toString();
+                            String tbls = "Dalle ore "+ start_hour + ":" + start_min + " alle ore: "+end_hour + ":"+end_min;
+
+                            timetables.add(tbls);
+                            sIds.add(snapshot.getKey());
+
+                            for(DataSnapshot snapshot2 : snapshot.child("bookings").getChildren()){
+                                if(snapshot2.child("data_prenotazione").getValue().toString().equals(selectedData.getText().toString())){
+                                    timetables.remove(tbls);
+                                    sIds.remove(snapshot.getKey());
+                                }
+
+                            }
+
+
+                           // if(!bookedSlot(id_doctor,snapshot.getKey(),selectedData.getText().toString(),database)){
+
+                             /*   Log.d("ritorno_valore","tornato false");
+                            }
+                            checkBooking = false;*/
                         }
-                        ArrayAdapter<String> adapterTwo = new ArrayAdapter<String>(UserActivity.this, android.R.layout.simple_spinner_item, timetables);
                         all_timetables = timetables;
-                        //Per ogni timetables, prima di darli allo spinner, chiamo una funzione per interrogare ilramo bookings e capire se il turno è libero omeno, se non lo è elimino dall'array quel valore
+                        all_ids = sIds;
+
+                        ArrayAdapter<String> adapterTwo = new ArrayAdapter<String>(UserActivity.this, android.R.layout.simple_spinner_item, timetables);
                         adapterTwo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                         spinnerTwo.setAdapter(adapterTwo);
                     }
@@ -177,7 +223,7 @@ public class UserActivity extends AppCompatActivity {
                     public void onCancelled(@NonNull DatabaseError error) {
                     }
                 });
-
+            }
             }
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
@@ -186,8 +232,32 @@ public class UserActivity extends AppCompatActivity {
 
     }
 
+    public boolean bookedSlot(String id_doctor,String id_turno_richiesto,String data_richiesta,FirebaseDatabase database){
+        DatabaseReference myRef = database.getReference();
+        myRef.child("bookings").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if (task.isSuccessful()) {
+                    for(DataSnapshot snapshot : task.getResult().child(id_doctor).child(data_richiesta).getChildren()){
+                        String status = snapshot.child("stato").getValue().toString();
+                        String id_turno = snapshot.child("id_turno").getValue().toString();
+                        Log.d("stato","Stato trovato: "+status);
+                        Log.d("turno","Id_turno: "+id_turno);
+                        Log.d("turno richiesto","turno_richiesto"+id_turno_richiesto);
+                        if(status.equals("booked") && id_turno.equals(id_turno_richiesto)){
+                            Log.d("checkBooking","CheckBooking True");
+                            checkBooking = true;
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        return checkBooking;
+    }
     public static String getDayStringOld(Date date, Locale locale) {
         DateFormat formatter = new SimpleDateFormat("EEEE", locale);
-        return formatter.format(date);
+        return formatter.format(date).substring(0, 1).toUpperCase() + formatter.format(date).substring(1).toLowerCase();
+
     }
 }
