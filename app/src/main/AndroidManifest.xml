@@ -12,18 +12,18 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.MyMed">
-        <activity android:name=".MainActivity">
+        <activity android:name="com.example.mymed.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity" />
-        <activity android:name=".UserActivity" />
-        <activity android:name=".DoctorActivity" />
-        <activity android:name=".ScheduleActivity" />
-        <activity android:name=".AddDoctorActivity"></activity>
+        <activity android:name="com.example.mymed.RegisterActivity" />
+        <activity android:name="com.example.mymed.UserActivity" />
+        <activity android:name="com.example.mymed.DoctorActivity" />
+        <activity android:name="com.example.mymed.ScheduleActivity" />
+        <activity android:name="com.example.mymed.AddDoctorActivity"></activity>
     </application>
 
 </manifest>
