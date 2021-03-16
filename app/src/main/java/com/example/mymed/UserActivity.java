@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -36,8 +37,9 @@ import java.util.Locale;
 
 public class UserActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "UserActivity";
     private Button logoutButton;
+    private Button bookButton;
     private EditText selectedData;
     private DatePickerDialog picker;
     private List<String> offices_selected = new ArrayList<String>();
@@ -46,6 +48,8 @@ public class UserActivity extends AppCompatActivity {
     private Spinner spinner;
     private Spinner spinnerTwo;
     private String id_doctor;
+    private String user_id;
+    private String giornoSettimana;
     private boolean checkBooking = false;
 
     private FirebaseAuth firebaseAuth;
@@ -57,6 +61,7 @@ public class UserActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
 
         logoutButton = (Button)findViewById(R.id.logout_button_med);
+        bookButton = (Button)findViewById(R.id.bookButton);
 
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,7 +73,6 @@ public class UserActivity extends AppCompatActivity {
 
             }
         });
-        firebaseAuth = FirebaseAuth.getInstance();
 
         if (firebaseAuth.getCurrentUser() == null) {
             // User is not logged in
@@ -76,7 +80,7 @@ public class UserActivity extends AppCompatActivity {
             finish();
         }
 
-        String user_id = firebaseAuth.getCurrentUser().getUid();
+        user_id = firebaseAuth.getCurrentUser().getUid();
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://mymed-b094e-default-rtdb.europe-west1.firebasedatabase.app/");
         DatabaseReference myRef = database.getReference();
 
@@ -115,6 +119,58 @@ public class UserActivity extends AppCompatActivity {
                                 Calendar newDate = Calendar.getInstance();
                                 newDate.set(year, monthOfYear, dayOfMonth);
                                 selectedData.setText(simpledateformat.format(newDate.getTime()));
+                                if(!selectedData.getText().toString().isEmpty()){
+                                    Date date1 = null;
+                                    try {
+                                        date1 = new SimpleDateFormat("dd-MM-yyyy").parse(selectedData.getText().toString());
+                                    } catch (ParseException e) {
+
+                                    }
+
+                                    giornoSettimana = getDayStringOld(date1, Locale.ITALIAN);
+                                    Log.e("giornoSettimana", "Giorno selezionato: " + giornoSettimana);
+
+                                    DatabaseReference myRef2 = database.getReference();
+                                    myRef2.child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                            final List<String> timetables = new ArrayList<String>();
+                                            List<String> tmt = new ArrayList<>();
+                                            final List<String> sIds = new ArrayList<>();//add ids in this list
+                                            final List<String> states = new ArrayList<>();
+                                            for (DataSnapshot snapshot : dataSnapshot.child("doctors").child(id_doctor).child("offices").child(spinner.getSelectedItem().toString()).child("timetables").child(giornoSettimana).getChildren()) {
+                                                String start_hour = snapshot.child("start_hour").getValue().toString();
+                                                String end_hour = snapshot.child("endHour").getValue().toString();
+                                                String start_min = snapshot.child("start_min").getValue().toString();
+                                                String end_min = snapshot.child("end_min").getValue().toString();
+                                                String tbls = "Dalle ore "+ start_hour + ":" + start_min + " alle ore: "+end_hour + ":"+end_min;
+
+                                                timetables.add(tbls);
+                                                sIds.add(snapshot.getKey());
+
+                                                for(DataSnapshot snapshot2 : snapshot.child("bookings").getChildren()){
+                                                    if(snapshot2.child("data_prenotazione").getValue().toString().equals(selectedData.getText().toString())){
+                                                        timetables.remove(tbls);
+                                                        sIds.remove(snapshot.getKey());
+                                                    }
+
+                                                }
+
+                                            }
+                                            all_timetables = timetables;
+                                            all_ids = sIds;
+
+                                            ArrayAdapter<String> adapterTwo = new ArrayAdapter<String>(UserActivity.this, android.R.layout.simple_spinner_item, timetables);
+                                            adapterTwo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                            spinnerTwo.setAdapter(adapterTwo);
+                                        }
+
+                                        @Override
+                                        public void onCancelled(@NonNull DatabaseError error) {
+                                        }
+                                    });
+                                }
                             }
                         }, year, month, day);
                 picker.show();
@@ -153,22 +209,9 @@ public class UserActivity extends AppCompatActivity {
                 try {
                     date1 = new SimpleDateFormat("dd-MM-yyyy").parse(selectedData.getText().toString());
                 } catch (ParseException e) {
-                    try {
-                        date1 = new SimpleDateFormat("d-MM-yyyy").parse(selectedData.getText().toString());
-                    } catch (ParseException parseException) {
-                        try {
-                            date1 = new SimpleDateFormat("dd-M-yyyy").parse(selectedData.getText().toString());
-                        } catch (ParseException exception) {
-                            try {
-                                date1 = new SimpleDateFormat("d-M-yyyy").parse(selectedData.getText().toString());
-                            } catch (ParseException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }
                 }
 
-                String giornoSettimana = getDayStringOld(date1, Locale.ITALIAN);
+                giornoSettimana = getDayStringOld(date1, Locale.ITALIAN);
                 Log.e("giornoSettimana", "Giorno selezionato: " + giornoSettimana);
 
                 DatabaseReference myRef2 = database.getReference();
@@ -198,12 +241,6 @@ public class UserActivity extends AppCompatActivity {
 
                             }
 
-
-                           // if(!bookedSlot(id_doctor,snapshot.getKey(),selectedData.getText().toString(),database)){
-
-                             /*   Log.d("ritorno_valore","tornato false");
-                            }
-                            checkBooking = false;*/
                         }
                         all_timetables = timetables;
                         all_ids = sIds;
@@ -224,34 +261,42 @@ public class UserActivity extends AppCompatActivity {
             }
         });
 
+        bookButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String data_selezionata = selectedData.getText().toString();
+                String studio_selezionato = spinner.getSelectedItem().toString();
+                String turno_selezionato = spinnerTwo.getSelectedItem().toString();
+
+                if(data_selezionata.equals("")||studio_selezionato.equals("")||turno_selezionato.equals("")){
+                    Toast.makeText(UserActivity.this, "Attenzione, tutti i campi sono obbligatori.", Toast.LENGTH_LONG).show();
+                }
+                else{
+
+                    String id_turno = all_ids.get(spinnerTwo.getSelectedItemPosition());
+
+                    Booking booking = new Booking(data_selezionata,"pending",user_id);
+                    BookingUser bookingUser = new BookingUser(data_selezionata,"pending",user_id,turno_selezionato);
+
+                    myRef.child("users").child("doctors").child(id_doctor)
+                            .child("offices").child(studio_selezionato).child("timetables")
+                            .child(giornoSettimana).child(id_turno).child("bookings").push().setValue(booking);
+
+                    myRef.child("bookings").child(id_doctor).child(data_selezionata).child(id_turno)
+                            .setValue(booking);
+
+                    myRef.child("users").child("patients").child(user_id).child("bookings").child(id_turno).push()
+                            .setValue(bookingUser);
+
+                    Toast.makeText(UserActivity.this, "Prenotazione completata con successo!", Toast.LENGTH_LONG).show();
+
+                }
+                }
+        });
     }
 
-    public boolean bookedSlot(String id_doctor,String id_turno_richiesto,String data_richiesta,FirebaseDatabase database){
-        DatabaseReference myRef = database.getReference();
-        myRef.child("bookings").get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    for(DataSnapshot snapshot : task.getResult().child(id_doctor).child(data_richiesta).getChildren()){
-                        String status = snapshot.child("stato").getValue().toString();
-                        String id_turno = snapshot.child("id_turno").getValue().toString();
-                        Log.d("stato","Stato trovato: "+status);
-                        Log.d("turno","Id_turno: "+id_turno);
-                        Log.d("turno richiesto","turno_richiesto"+id_turno_richiesto);
-                        if(status.equals("booked") && id_turno.equals(id_turno_richiesto)){
-                            Log.d("checkBooking","CheckBooking True");
-                            checkBooking = true;
-                            break;
-                        }
-                    }
-                }
-            }
-        });
-        return checkBooking;
-    }
     public static String getDayStringOld(Date date, Locale locale) {
         DateFormat formatter = new SimpleDateFormat("EEEE", locale);
         return formatter.format(date).substring(0, 1).toUpperCase() + formatter.format(date).substring(1).toLowerCase();
-
     }
 }

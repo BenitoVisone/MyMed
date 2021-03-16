@@ -100,7 +100,7 @@ MainActivity extends AppCompatActivity {
                                         public void onComplete(@NonNull Task<DataSnapshot> task) {
                                             if (task.isSuccessful()) {
                                                 if(task.getResult().getValue()!=null) MainActivity.this.startActivity(new Intent(MainActivity.this, DoctorActivity.class));
-                                                else MainActivity.this.startActivity(new Intent(MainActivity.this, UserActivity.class));
+                                                else MainActivity.this.startActivity(new Intent(MainActivity.this, ShowBookingsActivity.class));
                                                 MainActivity.this.finish();
                                             }
                                         }
