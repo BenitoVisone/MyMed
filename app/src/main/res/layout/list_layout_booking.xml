@@ -25,26 +25,42 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="33dp"
+        android:layout_marginStart="12dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="29dp"
         android:layout_marginRight="20dp"
         android:layout_toEndOf="@+id/profile_image"
         android:text="Username"
         android:textColor="#555555"
-        android:textSize="16sp" />
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/ora_prenotazione"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="77dp"
+        android:layout_marginStart="22dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="61dp"
+        android:layout_marginRight="20dp"
+        android:layout_toEndOf="@+id/ora_prenotazione3"
+        android:text="Username"
+        android:textColor="#555555"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/ora_prenotazione3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="12dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="61dp"
         android:layout_marginRight="20dp"
         android:layout_toEndOf="@+id/profile_image"
-        android:text="Username"
+        android:text="Orario selezionato:"
         android:textColor="#555555"
         android:textSize="16sp" />
 
@@ -53,12 +69,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="124dp"
+        android:layout_marginStart="17dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="29dp"
+        android:layout_marginRight="30dp"
+        android:layout_toEndOf="@+id/stato_prenotazione2"
+        android:text="Username"
+        android:textColor="#555555"
+        android:textSize="16sp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/stato_prenotazione2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="133dp"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="29dp"
         android:layout_marginRight="30dp"
         android:layout_toEndOf="@+id/profile_image"
-        android:text="Username"
+        android:text="Stato:"
         android:textColor="#555555"
         android:textSize="16sp" />
+
 </RelativeLayout>

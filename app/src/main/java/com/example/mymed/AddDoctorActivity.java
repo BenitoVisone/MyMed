@@ -4,6 +4,9 @@ package com.example.mymed;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -92,6 +95,36 @@ public class AddDoctorActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.edit_doctor){
+            startActivity(new Intent(AddDoctorActivity.this, AddDoctorActivity.class));
+            finish();
+        }
+        else if(id == R.id.edit_profile){
+            startActivity(new Intent(AddDoctorActivity.this, ChangePasswordActivity.class));
+            finish();
+        }
+        else if(id == R.id.logout){
+            firebaseAuth.signOut();
+            startActivity(new Intent(AddDoctorActivity.this, MainActivity.class));
+            finish();
+        }
+        else if(id == R.id.show_bookings){
+            startActivity(new Intent(AddDoctorActivity.this, ShowBookingsActivity.class));
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

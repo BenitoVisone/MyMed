@@ -3,6 +3,7 @@ package com.example.mymed;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,7 +46,13 @@ public class HelperAdapterBooking extends RecyclerView.Adapter {
 
         viewHolderClass.data_prenotazione.setText(booking.getData_prenotazione());
         viewHolderClass.stato_prenotazione.setText(booking.getStato());
-        viewHolderClass.turno_prenotazione.setText(booking.getTurno_selezionato());
+        viewHolderClass.turno_prenotazione.setText(booking.getOra());
+        if(booking.getStato().equals("booked")){
+            viewHolderClass.stato_prenotazione.setBackgroundColor(Color.GREEN);
+        }
+        else{
+            viewHolderClass.stato_prenotazione.setBackgroundColor(Color.YELLOW);
+        }
 
     }
 
@@ -59,7 +66,6 @@ public class HelperAdapterBooking extends RecyclerView.Adapter {
         TextView data_prenotazione, stato_prenotazione,turno_prenotazione;
         public ViewHolderClassBooking(@NonNull View itemView) {
             super(itemView);
-
             data_prenotazione = itemView.findViewById(R.id.data_prenotazione);
             stato_prenotazione = itemView.findViewById(R.id.stato_prenotazione);
             turno_prenotazione = itemView.findViewById(R.id.ora_prenotazione);

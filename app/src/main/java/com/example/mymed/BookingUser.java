@@ -4,22 +4,22 @@ public class BookingUser {
     String data_prenotazione;
     String stato;
     String id_utente;
-    String turno_selezionato;
+    String ora;
 
     public BookingUser(){}
-    public BookingUser(String data_prenotazione, String stato, String id_utente,String turno_selezionato) {
+    public BookingUser(String data_prenotazione, String stato, String id_utente,String ora) {
         this.data_prenotazione = data_prenotazione;
         this.stato = stato;
         this.id_utente = id_utente;
-        this.turno_selezionato = turno_selezionato;
+        this.ora = ora;
     }
 
-    public String getTurno_selezionato() {
-        return turno_selezionato;
+    public String getOra() {
+        return ora;
     }
 
-    public void setTurno_selezionato(String turno_selezionato) {
-        this.turno_selezionato = turno_selezionato;
+    public void setOra(String turno_selezionato) {
+        this.ora = turno_selezionato;
     }
 
     public String getData_prenotazione() {

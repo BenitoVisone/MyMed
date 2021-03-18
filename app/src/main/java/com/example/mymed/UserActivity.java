@@ -8,6 +8,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.text.InputType;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -84,20 +87,7 @@ public class UserActivity extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance("https://mymed-b094e-default-rtdb.europe-west1.firebasedatabase.app/");
         DatabaseReference myRef = database.getReference();
 
-        myRef.child("users").child("patients").child(user_id).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (!task.isSuccessful()) {
-                    Log.e("firebase", "Error getting data", task.getException());
-                }
-                else {
-                    if(task.getResult().child("doctor").getValue() == null){
-                        startActivity(new Intent(UserActivity.this, AddDoctorActivity.class));
-                        finish();
-                    }
-                }
-            }
-        });
+
 
         selectedData=(EditText) findViewById(R.id.editTextDataPrenotazione);
         spinner = (Spinner)findViewById(R.id.planet_spinner);
@@ -174,6 +164,7 @@ public class UserActivity extends AppCompatActivity {
                             }
                         }, year, month, day);
                 picker.show();
+                picker.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
             }
         });
 
@@ -298,5 +289,35 @@ public class UserActivity extends AppCompatActivity {
     public static String getDayStringOld(Date date, Locale locale) {
         DateFormat formatter = new SimpleDateFormat("EEEE", locale);
         return formatter.format(date).substring(0, 1).toUpperCase() + formatter.format(date).substring(1).toLowerCase();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if(id == R.id.edit_doctor){
+            startActivity(new Intent(UserActivity.this, AddDoctorActivity.class));
+            finish();
+        }
+        else if(id == R.id.edit_profile){
+            startActivity(new Intent(UserActivity.this, ChangePasswordActivity.class));
+            finish();
+        }
+        else if(id == R.id.logout){
+            firebaseAuth.signOut();
+            startActivity(new Intent(UserActivity.this, MainActivity.class));
+            finish();
+        }
+        else if(id == R.id.show_bookings){
+            startActivity(new Intent(UserActivity.this, ShowBookingsActivity.class));
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
